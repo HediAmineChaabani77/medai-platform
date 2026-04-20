@@ -159,14 +159,49 @@ def max_severity(alerts: list[InteractionAlert]) -> Severity | None:
     return max((a.severity for a in alerts), key=lambda s: SEVERITY_ORDER[s])
 
 
-def suggest_alternatives(db: Session, alerts: list[InteractionAlert], new_meds: list[Medication]) -> list[str]:
-    """Suggest alternatives using generic groups as a pragmatic local-only fallback."""
+def _alt_is_safe(name: str, substances: list[str], allergen_tokens: set[str]) -> bool:
+    """Reject any alternative whose commercial name or active substance contains
+    an allergen token. Protects against the amoxicilline-allergy → amoxicilline+clav trap.
+    """
+    if not allergen_tokens:
+        return True
+    hay = (name + " " + " ".join(substances or [])).lower()
+    return not any(tok in hay for tok in allergen_tokens if tok)
+
+
+def suggest_alternatives(
+    db: Session,
+    alerts: list[InteractionAlert],
+    new_meds: list[Medication],
+    allergens: list[str] | None = None,
+) -> list[str]:
+    """Suggest alternatives using generic groups as a pragmatic local-only fallback.
+
+    Alternatives are filtered against the patient's documented allergens: any
+    candidate whose name or active substance matches an allergen is dropped,
+    so an amoxicilline-allergic patient never gets amoxicilline+clav suggested.
+    """
     seeds = {(_norm(m.name)) for m in new_meds if m.name}
     for a in alerts:
         if a.drug_a:
             seeds.add(_norm(a.drug_a))
         if a.drug_b:
             seeds.add(_norm(a.drug_b))
+
+    allergen_tokens: set[str] = set()
+    for a in (allergens or []):
+        tok = _norm(a)
+        if tok:
+            allergen_tokens.add(tok)
+        # Also catch the full phrase without normalisation (e.g., "pénicilline").
+        base = (a or "").strip().lower()
+        if base:
+            allergen_tokens.add(base)
+
+    # Alerts of type=allergy carry the allergen in drug_a — add it as a forbidden token.
+    for alert in alerts:
+        if alert.type == "allergy" and alert.drug_a:
+            allergen_tokens.add(_norm(alert.drug_a))
 
     suggestions: list[str] = []
     seen: set[str] = set()
@@ -183,28 +218,34 @@ def suggest_alternatives(db: Session, alerts: list[InteractionAlert], new_meds: 
         cis_rows = (
             db.query(GenericGroupEntry.cis)
             .filter(GenericGroupEntry.group_id.in_(group_ids), GenericGroupEntry.cis != drug.cis)
-            .limit(6)
+            .limit(12)
             .all()
         )
         cises = [r[0] for r in cis_rows]
         if not cises:
             continue
-        alt_drugs = db.query(Drug).filter(Drug.cis.in_(cises)).limit(4).all()
+        alt_drugs = db.query(Drug).filter(Drug.cis.in_(cises)).limit(10).all()
         for alt in alt_drugs:
             name = alt.name.strip()
             low = name.lower()
             if low in seen:
+                continue
+            subs = [c.substance_name for c in (alt.compositions or [])]
+            if not _alt_is_safe(name, subs, allergen_tokens):
                 continue
             seen.add(low)
             suggestions.append(name)
             if len(suggestions) >= 6:
                 return suggestions
 
-    # Safety fallback if no group-based alternative was found.
+    # Safety fallback if no group-based alternative was found. Still honour allergens.
     if not suggestions:
         for fallback in ("Paracétamol", "Amoxicilline", "Metformine"):
-            if fallback.lower() not in seen:
-                suggestions.append(fallback)
+            if fallback.lower() in seen:
+                continue
+            if not _alt_is_safe(fallback, [fallback], allergen_tokens):
+                continue
+            suggestions.append(fallback)
     return suggestions[:6]
 
 
@@ -264,7 +305,7 @@ async def run_prescription_check(
 
     severity = max_severity(alerts)
     blocked = severity == "major"
-    alternatives = suggest_alternatives(db, alerts, req.new_medications) if alerts else []
+    alternatives = suggest_alternatives(db, alerts, req.new_medications, allergens=patient.allergies) if alerts else []
 
     explanation = _deterministic_explanation(alerts, blocked)
     provider_used = model_used = rule = None

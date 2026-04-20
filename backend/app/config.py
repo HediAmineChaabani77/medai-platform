@@ -46,6 +46,16 @@ class Settings(BaseSettings):
     dmp_data_path: str = "/tmp/medai_dmp/patients.json"
     dpi_archive_dir: str = "/tmp/medai_dpi_archive"
 
+    # Comma-separated list of allowed CORS origins (frontend hosts).
+    cors_origins: str = "http://localhost:3000,http://localhost:3001"
+
+    # Rate limit on /auth/login, per-IP. Format: "N/window" (e.g., 10/minute).
+    auth_login_rate_limit: str = "10/minute"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
 
 @lru_cache
 def get_settings() -> Settings:

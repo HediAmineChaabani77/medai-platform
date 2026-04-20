@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import csv
 import io
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.audit import append_audit, verify_chain
@@ -12,10 +13,10 @@ from app.config import Settings, get_settings
 from app.core.security import require_admin_user
 from app.db import get_db
 from app.models.audit import AuditLog
-from app.models.model_registry import ModelVersion, RLTrainingRun
+from app.models.model_registry import ModelVersion
 from app.models.routing_policy import RoutingPolicy
 from app.schemas.admin import AuditLogOut, FeedbackStats, Metrics, RoutingPolicyIn, RoutingPolicyOut
-from app.services.admin_service import compute_feedback_stats, compute_metrics, run_rule_tuning
+from app.services.admin_service import compute_feedback_stats, compute_metrics
 
 router = APIRouter(prefix="/api/admin", tags=["UC4-admin"])
 
@@ -51,6 +52,43 @@ def get_alerts(
         alerts.append({"level": "danger", "code": "error_rate_high", "message": f"Taux d'erreur élevé ({m.error_rate:.1%})."})
     if m.cloud_cost_estimate_eur > 15:
         alerts.append({"level": "warn", "code": "cloud_cost_high", "message": f"Coût cloud estimé élevé ({m.cloud_cost_estimate_eur:.2f} €)."})
+
+    # --- Auth anomaly detection: failed-login spike in the window ---
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+    failed = (
+        db.query(AuditLog)
+        .filter(AuditLog.event_type.in_(["auth_login_failed", "auth_login_mfa_failed"]))
+        .filter(AuditLog.created_at >= since)
+        .count()
+    )
+    if failed >= 20:
+        alerts.append({
+            "level": "danger",
+            "code": "auth_failed_spike",
+            "message": f"Pic d'échecs d'authentification ({failed} tentatives en {hours} h).",
+        })
+    elif failed >= 8:
+        alerts.append({
+            "level": "warn",
+            "code": "auth_failed_elevated",
+            "message": f"Niveau élevé d'échecs d'authentification ({failed} tentatives en {hours} h).",
+        })
+    # Per-user anomaly: any single username with ≥ 5 failures in the window.
+    user_counts = (
+        db.query(AuditLog.user_id, func.count(AuditLog.id))
+        .filter(AuditLog.event_type.in_(["auth_login_failed", "auth_login_mfa_failed"]))
+        .filter(AuditLog.created_at >= since)
+        .filter(AuditLog.user_id.isnot(None))
+        .group_by(AuditLog.user_id)
+        .all()
+    )
+    for username, count in user_counts:
+        if count >= 5:
+            alerts.append({
+                "level": "warn",
+                "code": "auth_failed_user",
+                "message": f"Compte '{username}': {count} échecs d'authentification sur {hours} h.",
+            })
     return {"window_hours": hours, "alerts": alerts}
 
 
@@ -276,26 +314,19 @@ def rl_train(
     settings: Settings = Depends(get_settings),
     admin=Depends(require_admin_user),
 ):
-    recommendations, summary = run_rule_tuning(db)
-    run = RLTrainingRun(
-        started_by=(admin.username if admin else None),
-        status="completed",
-        summary=summary,
-        recommendations=recommendations,
-    )
-    db.add(run)
-    db.commit()
-    db.refresh(run)
+    """RL training is intentionally out of scope for the current phase.
+    The PDF spec reserves RL for a future sprint; this endpoint is wired
+    so the monitoring UI can surface the correct 'not implemented' state
+    without a client-side 404.
+    """
     append_audit(
         db,
         settings.audit_hmac_key,
-        event_type="rl_train_run",
+        event_type="rl_train_not_implemented",
         user_id=(admin.username if admin else None),
-        payload={"run_id": run.id, "summary": summary, "recommendation_count": len(recommendations)},
+        payload={"reason": "out_of_scope_current_phase"},
     )
-    return {
-        "run_id": run.id,
-        "status": run.status,
-        "summary": run.summary,
-        "recommendations": run.recommendations or [],
-    }
+    raise HTTPException(
+        status_code=501,
+        detail="Not Implemented — RL training is scheduled for a future sprint.",
+    )

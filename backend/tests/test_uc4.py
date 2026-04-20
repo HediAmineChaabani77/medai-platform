@@ -53,7 +53,11 @@ def test_feedback_stats(db):
     assert abs(s.rejection_rate - 0.25) < 1e-9
 
 
-def test_rl_train_endpoint_returns_recommendations():
+def test_rl_train_endpoint_is_501_stub():
+    """RL is out of scope for the current phase per the PDF spec.
+    The endpoint exists so admin tooling gets a deterministic 501 instead
+    of a client-side 404, and the attempt is recorded in the audit log.
+    """
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -62,9 +66,6 @@ def test_rl_train_endpoint_returns_recommendations():
     Base.metadata.create_all(bind=engine)
     Session = sessionmaker(bind=engine, expire_on_commit=False)
     s = Session()
-    append_audit(s, "k", event_type="llm_call", use_case="UC1_DIAGNOSTIC", provider="local", model="m", latency_ms=42000)
-    s.add(Feedback(use_case="UC1_DIAGNOSTIC", action="reject"))
-    s.commit()
 
     def _get_db():
         try:
@@ -76,9 +77,8 @@ def test_rl_train_endpoint_returns_recommendations():
     app.dependency_overrides[require_admin_user] = lambda: SimpleNamespace(username="admin")
     client = TestClient(app)
     r = client.post("/api/admin/rl/train")
-    assert r.status_code == 200
+    assert r.status_code == 501
     body = r.json()
-    assert "run_id" in body
-    assert isinstance(body.get("recommendations"), list)
+    assert "detail" in body and "Not Implemented" in body["detail"]
     app.dependency_overrides.clear()
     s.close()
