@@ -1,0 +1,72 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: medai
+      POSTGRES_PASSWORD: medai
+      POSTGRES_DB: medai
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medai"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.0
+    ports:
+      - "6335:6333"
+    volumes:
+      - qdrantdata:/qdrant/storage
+
+  # Ollama runs NATIVELY on the WSL host (for local GPU / stable local-only mode).
+  # Backend reaches it via host.docker.internal:11436.
+  #
+  # Mock kept as a fallback for ultra-fast offline test runs.
+  mock-ollama:
+    image: python:3.11-alpine
+    working_dir: /app
+    volumes:
+      - ./backend/scripts/mock_ollama.py:/app/mock_ollama.py:ro
+    command: ["python", "/app/mock_ollama.py"]
+    expose:
+      - "11434"
+    profiles: ["mock"]
+
+  backend:
+    build: ./backend
+    env_file: ./backend/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11436
+      LLM_LOCAL_MODEL: ${LLM_LOCAL_MODEL:-llama3.2:3b}
+      LLM_EMBED_MODEL: nomic-embed-text
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/data:/app/data
+      - ./backend/scripts:/app/scripts
+      - ./ingestion:/app/ingestion
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8001
+    ports:
+      - "3001:3000"
+
+volumes:
+  pgdata:
+  qdrantdata:

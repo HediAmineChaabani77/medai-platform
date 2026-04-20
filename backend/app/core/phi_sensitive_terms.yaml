@@ -1,0 +1,29 @@
+# High-sensitivity clinical topics. Presence triggers local-only routing.
+high_sensitivity_terms:
+  - "vih"
+  - "hiv"
+  - "sida"
+  - "aids"
+  - "schizophrénie"
+  - "schizophrenie"
+  - "bipolaire"
+  - "dépression sévère"
+  - "depression severe"
+  - "psychose"
+  - "génétique"
+  - "genetique"
+  - "brca1"
+  - "brca2"
+  - "huntington"
+  - "mucoviscidose"
+  - "drépanocytose"
+  - "drepanocytose"
+  - "trisomie"
+
+# Rare disease ICD-10 codes (subset). These route local.
+rare_disease_icd10:
+  - "E84"   # Cystic fibrosis
+  - "G10"   # Huntington's disease
+  - "D57"   # Sickle-cell disorders
+  - "Q90"   # Down syndrome
+  - "Z31.4" # Genetic counseling

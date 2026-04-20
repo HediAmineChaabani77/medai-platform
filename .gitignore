@@ -1,0 +1,19 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+.next/
+dist/
+build/
+backend/data/vector_store/*
+!backend/data/vector_store/.gitkeep
+*.log
+.DS_Store
+
+# Local tooling / design artifacts — not tracked
+.claude/
+.design/
