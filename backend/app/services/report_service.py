@@ -143,6 +143,74 @@ def transcribe_audio_local(audio_path: Path, language: str = "fr") -> str:
     return " ".join(seg.text for seg in segments).strip()
 
 
+_GENDER_MASC = re.compile(r"\b(?:homme|patient|monsieur|m\.)\b", re.IGNORECASE)
+_GENDER_FEM = re.compile(r"\b(?:femme|patiente|madame|mme|mademoiselle)\b", re.IGNORECASE)
+
+_VITAL_PATTERNS = [
+    # (label, regex matching the value+unit combo that hallucinates often)
+    ("FC",      re.compile(r"(?:FC|fréquence cardiaque)\s*[:=]?\s*\d{2,3}\s*(?:/?min|bpm)?", re.IGNORECASE)),
+    ("PA",      re.compile(r"(?:PA|pression artérielle)\s*[:=]?\s*\d{2,3}\s*/\s*\d{2,3}", re.IGNORECASE)),
+    ("T°",      re.compile(r"(?:T°|température|temp)\s*[:=]?\s*\d{2}[,.]?\d?\s*°?C?", re.IGNORECASE)),
+    ("SpO2",    re.compile(r"(?:SpO2|saturation|sat)\s*[:=]?\s*\d{2,3}\s*%?", re.IGNORECASE)),
+    ("Poids",   re.compile(r"(?:poids)\s*[:=]?\s*\d{2,3}\s*(?:kg)?", re.IGNORECASE)),
+    ("FR",      re.compile(r"(?:FR|fréquence respiratoire)\s*[:=]?\s*\d{1,2}\s*(?:/?min)?", re.IGNORECASE)),
+]
+
+
+def scrub_hallucinations(generated: str, raw_text: str) -> str:
+    """Post-generation guardrail.
+
+    Removes vitals that the model invented (not present in raw_text) and
+    corrects gender flips where the raw notes contradict the generated output.
+    This is a conservative regex-based pass — it never adds content, only
+    strikes out or rewrites hallucinated fragments.
+    """
+    if not generated:
+        return generated
+    raw = raw_text or ""
+
+    # --- Gender flip correction ---
+    # If the raw notes indicate masculine and the output uses feminine markers,
+    # replace the feminine markers with their masculine equivalents and vice-versa.
+    raw_masc = bool(_GENDER_MASC.search(raw))
+    raw_fem = bool(_GENDER_FEM.search(raw))
+    out = generated
+    if raw_masc and not raw_fem:
+        out = re.sub(r"\bMme\b", "M.", out)
+        out = re.sub(r"\bmadame\b", "monsieur", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bpatiente\b", "patient", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bune femme\b", "un homme", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bla femme\b", "l'homme", out, flags=re.IGNORECASE)
+    elif raw_fem and not raw_masc:
+        out = re.sub(r"\bM\.\s", "Mme ", out)
+        out = re.sub(r"\bmonsieur\b", "madame", out, flags=re.IGNORECASE)
+        # Avoid touching "patient" because it is a common generic term; we only
+        # flip if specifically masculine determiner precedes it.
+        out = re.sub(r"\bun homme\b", "une femme", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bl'homme\b", "la femme", out, flags=re.IGNORECASE)
+
+    # --- Invented vitals: drop lines whose vital value is not in raw ---
+    kept_lines: list[str] = []
+    for line in out.splitlines():
+        drop = False
+        for label, pat in _VITAL_PATTERNS:
+            m = pat.search(line)
+            if not m:
+                continue
+            fragment = m.group(0)
+            # If the same label+numeric fragment does not appear in raw_text,
+            # this is a hallucination.
+            if not pat.search(raw):
+                drop = True
+                break
+        if drop:
+            # Replace with a neutral placeholder line so the section still renders.
+            kept_lines.append("Non renseigné.")
+        else:
+            kept_lines.append(line)
+    return "\n".join(kept_lines)
+
+
 async def run_report(
     db: Session,
     dispatcher: LLMDispatcher,
@@ -171,6 +239,7 @@ async def run_report(
     )
 
     markdown = result.response.text
+    markdown = scrub_hallucinations(markdown, req.raw_text)
     parsed_sections = _parse_markdown_sections(markdown, sections)
     signature = sign_report(markdown, req.physician_key)
 

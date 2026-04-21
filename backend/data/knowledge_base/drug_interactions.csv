@@ -1,0 +1,90 @@
+drug_a,drug_b,severity,mechanism,note,source
+warfarin,aspirin,major,Additif antiagrégant + anticoagulant,Risque hémorragique majeur. À éviter.,manual_seed
+warfarin,ibuprofen,major,AINS inhibe l'agrégation plaquettaire et irrite la muqueuse gastrique,Risque hémorragique digestif.,manual_seed
+warfarin,amiodarone,major,Inhibition CYP2C9 potentialisant les AVK,Réduire la warfarine 30-50% et surveiller INR.,manual_seed
+warfarin,clarithromycin,moderate,Inhibition CYP3A4,Surveillance INR renforcée.,manual_seed
+warfarin,miconazole,major,Inhibition CYP2C9 majeure,Contre-indiqué. INR pouvant devenir incoagulable.,manual_seed
+warfarin,fluconazole,major,Inhibition CYP2C9,Réduire la warfarine et surveiller INR.,manual_seed
+warfarin,paracetamol,moderate,Potentialisation AVK à forte dose (>2g/j prolongée),Surveillance INR si paracétamol régulier > 2g/j.,manual_seed
+warfarin,ciprofloxacin,moderate,Inhibition CYP1A2/3A4,Surveillance INR renforcée.,manual_seed
+warfarin,tramadol,moderate,Mécanisme pharmacocinétique incomplètement élucidé,Surveillance INR renforcée.,manual_seed
+warfarin,millepertuis,major,Inducteur enzymatique CYP3A4/2C9,Diminution efficacité AVK. À éviter.,manual_seed
+aspirin,ibuprofen,moderate,Antagonisme effet antiagrégant + toxicité digestive additive,Espacer les prises. Éviter la co-prescription chronique.,manual_seed
+aspirin,methotrexate,major,Réduction de la clairance rénale du MTX,Toxicité hématologique sévère à forte dose de MTX.,manual_seed
+aspirin,clopidogrel,moderate,Double antiagrégation,Indication cardio précise obligatoire. Risque hémorragique.,manual_seed
+aspirin,rivaroxaban,major,Additif anticoagulation + antiagrégation,Risque hémorragique majeur.,manual_seed
+aspirin,apixaban,major,Additif anticoagulation + antiagrégation,Risque hémorragique majeur.,manual_seed
+aspirin,dabigatran,major,Additif anticoagulation + antiagrégation,Risque hémorragique majeur.,manual_seed
+clopidogrel,omeprazole,moderate,Inhibition CYP2C19 réduit l'activation du clopidogrel,Préférer pantoprazole ou rabéprazole.,manual_seed
+clopidogrel,esomeprazole,moderate,Inhibition CYP2C19,Préférer pantoprazole ou rabéprazole.,manual_seed
+clopidogrel,fluoxetine,moderate,Inhibition CYP2C19,Surveillance clinique. Alternative ISRS possible.,manual_seed
+ibuprofen,lithium,moderate,Réduction de la clairance rénale du lithium,Dosage plasmatique du lithium recommandé.,manual_seed
+ibuprofen,methotrexate,major,Réduction clairance rénale + toxicité additive,À éviter à dose immunosuppressive.,manual_seed
+metformin,contrast_iodine,major,Risque d'acidose lactique par insuffisance rénale aiguë,Suspendre 48h avant et après injection.,manual_seed
+metformin,alcohol,moderate,Risque d'acidose lactique,Éviter consommation excessive.,manual_seed
+amoxicilline,methotrexate,moderate,Compétition pour l'excrétion rénale,Surveiller hémogramme.,manual_seed
+amoxicilline,allopurinol,minor,Mécanisme immuno-allergique,Rash cutané plus fréquent.,manual_seed
+amoxicilline,warfarin,moderate,Déplacement liaison protéique + effet sur flore intestinale,Surveillance INR renforcée.,manual_seed
+simvastatin,clarithromycin,major,Inhibition CYP3A4 majeure,Suspendre la statine pendant le traitement. Risque rhabdomyolyse.,manual_seed
+simvastatin,erythromycin,major,Inhibition CYP3A4,Idem: suspendre ou remplacer.,manual_seed
+simvastatin,amiodarone,moderate,Inhibition CYP3A4,Limiter simvastatine à 20 mg/j.,manual_seed
+simvastatin,amlodipine,moderate,Inhibition CYP3A4,Limiter simvastatine à 20 mg/j.,manual_seed
+simvastatin,fusidic_acid,major,Inhibition CYP3A4 majeure,Contre-indiqué. Risque de rhabdomyolyse mortelle.,manual_seed
+atorvastatin,clarithromycin,moderate,Inhibition CYP3A4,Réduire la dose d'atorvastatine.,manual_seed
+atorvastatin,cyclosporine,major,Inhibition du transport OATP1B1,Contre-indiqué.,manual_seed
+rosuvastatin,cyclosporine,major,Inhibition OATP1B1,Contre-indiqué.,manual_seed
+digoxin,amiodarone,moderate,Inhibition P-gp + CYP3A4,Réduire la digoxine 50%.,manual_seed
+digoxin,verapamil,moderate,Inhibition P-gp,Réduire la digoxine 50%.,manual_seed
+digoxin,spironolactone,moderate,Augmentation taux digoxine,Surveiller digoxinémie.,manual_seed
+digoxin,clarithromycin,moderate,Inhibition P-gp,Surveillance digoxinémie.,manual_seed
+digoxin,furosemide,moderate,Hypokaliémie majore la toxicité digitalique,Surveiller kaliémie et digoxinémie.,manual_seed
+lithium,hydrochlorothiazide,major,Diminution clairance rénale Li,Risque toxicité lithique sévère.,manual_seed
+lithium,ramipril,moderate,Réduction clairance rénale Li,Dosage lithémie.,manual_seed
+lithium,losartan,moderate,Réduction clairance rénale Li,Dosage lithémie.,manual_seed
+lithium,ibuprofen,moderate,Réduction clairance rénale Li,Dosage lithémie.,manual_seed
+sertraline,tramadol,major,Syndrome sérotoninergique,Éviter. Surveiller si co-prescription obligatoire.,manual_seed
+fluoxetine,tramadol,major,Syndrome sérotoninergique + abaissement seuil épileptogène,À éviter.,manual_seed
+citalopram,tramadol,major,Syndrome sérotoninergique,À éviter.,manual_seed
+sertraline,moclobemide,major,Syndrome sérotoninergique,Contre-indication.,manual_seed
+fluoxetine,selegiline,major,Syndrome sérotoninergique,Contre-indication.,manual_seed
+sertraline,triptans,moderate,Syndrome sérotoninergique,Association possible avec surveillance.,manual_seed
+sertraline,warfarin,moderate,Inhibition plaquettaire ISRS + AVK,Risque hémorragique. Surveillance INR.,manual_seed
+citalopram,amiodarone,major,Addition QT long,Contre-indication (citalopram >20mg/j).,manual_seed
+citalopram,quinine,major,Addition QT long,Contre-indication.,manual_seed
+citalopram,hydroxychloroquine,moderate,Addition QT long,ECG de contrôle.,manual_seed
+ramipril,spironolactone,major,Hyperkaliémie,Surveillance stricte kaliémie et fonction rénale.,manual_seed
+ramipril,potassium,major,Hyperkaliémie,À éviter sauf indication et surveillance.,manual_seed
+ramipril,ibuprofen,moderate,Diminution efficacité anti-HTA + néphrotoxicité,Éviter AINS chronique.,manual_seed
+ramipril,furosemide,moderate,Hypotension orthostatique première prise,Espacer initiation.,manual_seed
+losartan,spironolactone,major,Hyperkaliémie,Surveillance kaliémie.,manual_seed
+losartan,ibuprofen,moderate,Diminution efficacité + néphrotoxicité,Triple whammy si + diurétique.,manual_seed
+furosemide,gentamicin,moderate,Ototoxicité additive,Surveillance audition.,manual_seed
+furosemide,digoxin,moderate,Hypokaliémie potentialise digitalique,Surveiller kaliémie.,manual_seed
+beta_blocker,verapamil,major,Bradycardie et hypotension sévère,À éviter IV ensemble.,manual_seed
+beta_blocker,diltiazem,moderate,Bradycardie additive,Surveiller FC et PR.,manual_seed
+beta_blocker,insulin,moderate,Masquage des signes d'hypoglycémie,Préférer béta-bloquant cardiosélectif.,manual_seed
+atenolol,verapamil,major,Bradycardie,À éviter IV.,manual_seed
+sildenafil,nitrates,major,Hypotension sévère,Contre-indication absolue.,manual_seed
+sildenafil,tamsulosin,moderate,Hypotension orthostatique,Espacer les prises.,manual_seed
+methotrexate,trimethoprim,major,Toxicité hématologique (inhibition DHFR),À éviter. Risque pancytopénie.,manual_seed
+methotrexate,cotrimoxazole,major,Toxicité hématologique,À éviter.,manual_seed
+allopurinol,azathioprine,major,Inhibition xanthine oxydase + accumulation azathioprine,Réduire azathioprine de 75%.,manual_seed
+allopurinol,mercaptopurine,major,Inhibition xanthine oxydase,Réduire la dose.,manual_seed
+benzodiazepine,opioid,major,Dépression respiratoire synergique,Éviter. Risque fatal.,manual_seed
+diazepam,morphine,major,Dépression respiratoire,Éviter.,manual_seed
+alprazolam,oxycodone,major,Dépression respiratoire,Éviter.,manual_seed
+tramadol,codeine,moderate,Additif opioïde + saturation CYP2D6,Redondance thérapeutique.,manual_seed
+fluoxetine,warfarin,moderate,Inhibition CYP2C9,Surveillance INR.,manual_seed
+paroxetine,tamoxifen,major,Inhibition CYP2D6 bloquant activation tamoxifène,Préférer escitalopram/sertraline.,manual_seed
+rifampicin,warfarin,major,Induction CYP,Diminution majeure efficacité AVK.,manual_seed
+rifampicin,oral_contraceptive,major,Induction CYP,Echec contraception.,manual_seed
+phenytoin,warfarin,moderate,Interaction CYP complexe bidirectionnelle,Surveillance INR et phénytoïnémie.,manual_seed
+carbamazepine,oral_contraceptive,major,Induction CYP,Echec contraception.,manual_seed
+theophylline,ciprofloxacin,major,Inhibition CYP1A2,Risque de toxicité théophylline (convulsions).,manual_seed
+theophylline,erythromycin,moderate,Inhibition CYP1A2,Surveillance taux théophylline.,manual_seed
+clozapine,ciprofloxacin,major,Inhibition CYP1A2,Surveillance taux clozapine.,manual_seed
+metoprolol,paroxetine,moderate,Inhibition CYP2D6,Peut potentialiser le bêta-bloquant.,manual_seed
+codeine,paroxetine,moderate,Inhibition CYP2D6 bloquant conversion en morphine,Diminution efficacité antalgique.,manual_seed
+colchicine,clarithromycin,major,Inhibition P-gp/CYP3A4,Contre-indiqué chez l'insuffisant rénal.,manual_seed
+amiodarone,warfarin,major,Inhibition CYP,Réduire warfarine et surveiller INR.,manual_seed
+amiodarone,digoxin,moderate,Inhibition P-gp + CYP3A4,Réduire digoxine 50%.,manual_seed

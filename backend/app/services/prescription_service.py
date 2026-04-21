@@ -23,15 +23,177 @@ SEVERITY_ORDER = {"minor": 1, "moderate": 2, "major": 3}
 # French commercial/DCI variants -> canonical DCI used by the interaction table.
 # Extend as new sources (DrugBank, Thériaque) are ingested.
 DRUG_ALIASES: dict[str, str] = {
+    # AVK / anticoagulants
     "warfarine": "warfarin",
+    "coumadine": "warfarin",
+    "sintrom": "acenocoumarol",
+    "previscan": "fluindione",
+    "rivaroxaban": "rivaroxaban",
+    "xarelto": "rivaroxaban",
+    "apixaban": "apixaban",
+    "eliquis": "apixaban",
+    "dabigatran": "dabigatran",
+    "pradaxa": "dabigatran",
+    # Antiagrégants
     "aspirine": "aspirin",
     "acide": "aspirin",  # "acide acétylsalicylique" -> first token
+    "kardegic": "aspirin",
+    "clopidogrel": "clopidogrel",
+    "plavix": "clopidogrel",
+    # AINS
     "ibuprofene": "ibuprofen",
     "ibuprofène": "ibuprofen",
+    "naproxene": "naproxen",
+    "naproxène": "naproxen",
+    "diclofenac": "diclofenac",
+    "ketoprofene": "ketoprofen",
+    # Antibiotiques
     "amoxicilline": "amoxicillin",
-    "paracétamol": "paracetamol",
-    "metformine": "metformin",
+    "augmentin": "amoxicillin",
     "clarithromycine": "clarithromycin",
+    "érythromycine": "erythromycin",
+    "erythromycine": "erythromycin",
+    "azithromycine": "azithromycin",
+    "ciprofloxacine": "ciprofloxacin",
+    "levofloxacine": "levofloxacin",
+    "cotrimoxazole": "cotrimoxazole",
+    "bactrim": "cotrimoxazole",
+    "trimethoprime": "trimethoprim",
+    "rifampicine": "rifampicin",
+    "gentamicine": "gentamicin",
+    "acide_fusidique": "fusidic_acid",
+    # Antifongiques
+    "miconazole": "miconazole",
+    "daktarin": "miconazole",
+    "fluconazole": "fluconazole",
+    "triflucan": "fluconazole",
+    "itraconazole": "itraconazole",
+    "ketoconazole": "ketoconazole",
+    # Anti-H2 / IPP
+    "omeprazole": "omeprazole",
+    "mopral": "omeprazole",
+    "esomeprazole": "esomeprazole",
+    "pantoprazole": "pantoprazole",
+    "inipomp": "pantoprazole",
+    "rabeprazole": "rabeprazole",
+    # Hypoglycémiants
+    "metformine": "metformin",
+    "glucophage": "metformin",
+    "stagid": "metformin",
+    # Analgésiques
+    "paracétamol": "paracetamol",
+    "paracetamol": "paracetamol",
+    "doliprane": "paracetamol",
+    "dafalgan": "paracetamol",
+    "efferalgan": "paracetamol",
+    "tramadol": "tramadol",
+    "contramal": "tramadol",
+    "topalgic": "tramadol",
+    "codeine": "codeine",
+    "codéine": "codeine",
+    "morphine": "morphine",
+    "skenan": "morphine",
+    "oxycodone": "oxycodone",
+    "oxycontin": "oxycodone",
+    # Psychotropes
+    "fluoxetine": "fluoxetine",
+    "prozac": "fluoxetine",
+    "sertraline": "sertraline",
+    "zoloft": "sertraline",
+    "citalopram": "citalopram",
+    "seropram": "citalopram",
+    "escitalopram": "escitalopram",
+    "seroplex": "escitalopram",
+    "paroxetine": "paroxetine",
+    "deroxat": "paroxetine",
+    "moclobemide": "moclobemide",
+    "moclamine": "moclobemide",
+    "selegiline": "selegiline",
+    "millepertuis": "millepertuis",
+    "diazepam": "diazepam",
+    "valium": "diazepam",
+    "alprazolam": "alprazolam",
+    "xanax": "alprazolam",
+    "oxazepam": "oxazepam",
+    "seresta": "oxazepam",
+    # CV
+    "amiodarone": "amiodarone",
+    "cordarone": "amiodarone",
+    "verapamil": "verapamil",
+    "isoptine": "verapamil",
+    "diltiazem": "diltiazem",
+    "digoxine": "digoxin",
+    "digoxin": "digoxin",
+    "amlodipine": "amlodipine",
+    "amlor": "amlodipine",
+    "ramipril": "ramipril",
+    "triatec": "ramipril",
+    "enalapril": "enalapril",
+    "lisinopril": "lisinopril",
+    "captopril": "captopril",
+    "losartan": "losartan",
+    "cozaar": "losartan",
+    "valsartan": "valsartan",
+    "irbesartan": "irbesartan",
+    "furosemide": "furosemide",
+    "lasilix": "furosemide",
+    "hydrochlorothiazide": "hydrochlorothiazide",
+    "esidrex": "hydrochlorothiazide",
+    "spironolactone": "spironolactone",
+    "aldactone": "spironolactone",
+    "atenolol": "atenolol",
+    "tenormine": "atenolol",
+    "bisoprolol": "beta_blocker",
+    "metoprolol": "beta_blocker",
+    "propranolol": "beta_blocker",
+    "avlocardyl": "beta_blocker",
+    # Statines
+    "simvastatine": "simvastatin",
+    "zocor": "simvastatin",
+    "atorvastatine": "atorvastatin",
+    "tahor": "atorvastatin",
+    "rosuvastatine": "rosuvastatin",
+    "crestor": "rosuvastatin",
+    "pravastatine": "pravastatin",
+    # Autres
+    "methotrexate": "methotrexate",
+    "methotrexate_oral": "methotrexate",
+    "allopurinol": "allopurinol",
+    "zyloric": "allopurinol",
+    "azathioprine": "azathioprine",
+    "imurel": "azathioprine",
+    "mercaptopurine": "mercaptopurine",
+    "colchicine": "colchicine",
+    "colchimax": "colchicine",
+    "lithium": "lithium",
+    "teralithe": "lithium",
+    "theophylline": "theophylline",
+    "clozapine": "clozapine",
+    "leponex": "clozapine",
+    "phenytoine": "phenytoin",
+    "phenytoin": "phenytoin",
+    "carbamazepine": "carbamazepine",
+    "tegretol": "carbamazepine",
+    "tamoxifen": "tamoxifen",
+    "tamoxifene": "tamoxifen",
+    "cyclosporine": "cyclosporine",
+    "neoral": "cyclosporine",
+    "sildenafil": "sildenafil",
+    "viagra": "sildenafil",
+    "tamsulosin": "tamsulosin",
+    "omix": "tamsulosin",
+    "insuline": "insulin",
+    "insulin": "insulin",
+    # Abstract groups used in the interaction table
+    "quinine": "quinine",
+    "hydroxychloroquine": "hydroxychloroquine",
+    "plaquenil": "hydroxychloroquine",
+    "triptan": "triptans",
+    "sumatriptan": "triptans",
+    "imigrane": "triptans",
+    "zolmitriptan": "triptans",
+    "contrast": "contrast_iodine",
+    "iode": "contrast_iodine",
 }
 
 
@@ -61,37 +223,149 @@ def check_allergies(patient: PatientProfile, new_meds: list[Medication]) -> list
     return alerts
 
 
+_AINS = {"ibuprofen", "ibuprofène", "aspirin", "aspirine", "naproxen", "diclofenac", "ketoprofen"}
+_QT_PROLONGATEURS = {
+    "amiodarone", "citalopram", "escitalopram", "clarithromycin", "azithromycin",
+    "erythromycin", "levofloxacin", "ciprofloxacin", "quinine", "hydroxychloroquine",
+    "ondansetron", "haloperidol", "methadone", "sotalol",
+}
+_SEROTONINERGIQUES = {
+    "sertraline", "fluoxetine", "citalopram", "escitalopram", "paroxetine",
+    "venlafaxine", "moclobemide", "selegiline", "tramadol", "triptans", "millepertuis",
+}
+_ANTICHOLINERGIQUES = {
+    "amitriptyline", "clomipramine", "oxybutynin", "solifenacin", "scopolamine",
+    "promethazine", "diphenhydramine", "hydroxyzine",
+}
+
+
 def check_contraindications(patient: PatientProfile, new_meds: list[Medication]) -> list[InteractionAlert]:
+    """Encode high-signal contraindications from the HAS thesaurus + ANSM.
+    Kept deterministic: rule-based, no LLM involvement. Each rule is a literal,
+    documented clinical contraindication.
+    """
     alerts: list[InteractionAlert] = []
+
     for m in new_meds:
         name = _norm(m.name)
+
+        # Renal: metformine
         if name == "metformin" and (patient.dfg_ml_min is not None and patient.dfg_ml_min < 30):
-            alerts.append(
-                InteractionAlert(
-                    type="contraindication",
-                    severity="major",
-                    drug_a=m.name,
-                    mechanism=f"DFG {patient.dfg_ml_min} mL/min < 30 — risque d'acidose lactique",
-                )
-            )
-        if name in {"ibuprofen", "ibuprofène", "aspirin", "aspirine"} and patient.pregnant:
-            alerts.append(
-                InteractionAlert(
-                    type="contraindication",
-                    severity="major",
-                    drug_a=m.name,
-                    mechanism="AINS contre-indiqué à partir du 2e-3e trimestre de grossesse",
-                )
-            )
-        if name == "warfarin" and patient.pregnant:
-            alerts.append(
-                InteractionAlert(
-                    type="contraindication",
-                    severity="major",
-                    drug_a=m.name,
-                    mechanism="AVK tératogène au T1 et hémorragique au T3",
-                )
-            )
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism=f"DFG {patient.dfg_ml_min} mL/min < 30 — risque d'acidose lactique",
+            ))
+        # Renal: AINS
+        if name in _AINS and (patient.dfg_ml_min is not None and patient.dfg_ml_min < 30):
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism=f"AINS contre-indiqué si DFG < 30 mL/min (ici {patient.dfg_ml_min}) — risque d'insuffisance rénale aiguë",
+            ))
+        # Renal: digoxine à dose standard
+        if name == "digoxin" and (patient.dfg_ml_min is not None and patient.dfg_ml_min < 50):
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="moderate", drug_a=m.name,
+                mechanism=f"Adapter la dose: DFG {patient.dfg_ml_min} mL/min (risque de toxicité digitalique)",
+            ))
+        # Insuffisance hépatique sévère
+        if patient.hepatic_failure and name in {"metformin", "methotrexate", "paracetamol", "statins",
+                                                "atorvastatin", "simvastatin", "rosuvastatin",
+                                                "amiodarone", "valproate"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Insuffisance hépatique sévère — métabolisme altéré, risque de toxicité",
+            ))
+
+        # Grossesse
+        if patient.pregnant and name in _AINS:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="AINS contre-indiqué à partir du 2e-3e trimestre (fermeture canal artériel, oligoamnios)",
+            ))
+        if patient.pregnant and name in {"warfarin", "acenocoumarol", "fluindione"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="AVK tératogène au T1 (embryopathie) et hémorragique au T3",
+            ))
+        if patient.pregnant and name in {"isotretinoin", "acitretin", "methotrexate",
+                                         "ribavirin", "mycophenolate", "thalidomide"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Tératogène majeur — contre-indication absolue en grossesse",
+            ))
+        if patient.pregnant and name in {"ramipril", "enalapril", "lisinopril", "captopril",
+                                         "losartan", "valsartan", "irbesartan"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="IEC/ARA2 contre-indiqué à partir du T2 (oligoamnios, anomalies rénales)",
+            ))
+
+        # Asthme + bêta-bloquants non sélectifs
+        if patient.asthma and name in {"beta_blocker", "propranolol"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Bêta-bloquant non sélectif contre-indiqué chez l'asthmatique — risque de bronchospasme",
+            ))
+
+        # Ulcère gastroduodénal évolutif + AINS
+        if patient.peptic_ulcer and name in _AINS:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Ulcère gastroduodénal évolutif — AINS contre-indiqué",
+            ))
+
+        # Épilepsie + tramadol / abaisseurs de seuil
+        if patient.epilepsy and name in {"tramadol", "bupropion"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Abaisseur du seuil épileptogène chez un patient épileptique",
+            ))
+
+        # QT long baseline + prolongateurs QT
+        if patient.qt_ms and patient.qt_ms > 450 and name in _QT_PROLONGATEURS:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism=f"QTc {patient.qt_ms:.0f} ms > 450 — prolongateur QT contre-indiqué",
+            ))
+
+        # Hyperkaliémie + épargneurs K+
+        if patient.kaliemia_mmol and patient.kaliemia_mmol >= 5.5 and name in {
+            "spironolactone", "eplerenone", "amiloride", "triamterene",
+            "ramipril", "enalapril", "lisinopril", "captopril",
+            "losartan", "valsartan", "irbesartan",
+        }:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism=f"Kaliémie {patient.kaliemia_mmol:.1f} mmol/L — risque d'hyperkaliémie aggravée",
+            ))
+
+        # Pédiatrie
+        if patient.age is not None and patient.age < 16 and name in {"aspirin", "aspirine"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Aspirine contre-indiquée avant 16 ans — risque de syndrome de Reye",
+            ))
+        if patient.age is not None and patient.age < 12 and name in {"codeine", "tramadol"}:
+            alerts.append(InteractionAlert(
+                type="contraindication", severity="major", drug_a=m.name,
+                mechanism="Opioïdes contre-indiqués avant 12 ans (ANSM 2013/2017)",
+            ))
+
+    # Triple whammy (IEC ou ARA2) + AINS + diurétique → IRA
+    current_tokens = {_norm(c.name) for c in patient.current_medications}
+    iec_ara = {"ramipril", "enalapril", "lisinopril", "captopril", "losartan", "valsartan", "irbesartan"}
+    diuretics = {"furosemide", "hydrochlorothiazide", "spironolactone", "indapamide"}
+    for m in new_meds:
+        name = _norm(m.name)
+        if name in _AINS:
+            has_iec = bool(current_tokens & iec_ara)
+            has_diuretic = bool(current_tokens & diuretics)
+            if has_iec and has_diuretic:
+                alerts.append(InteractionAlert(
+                    type="contraindication", severity="major", drug_a=m.name,
+                    mechanism="Triple whammy: IEC/ARA2 + diurétique + AINS — risque élevé d'insuffisance rénale aiguë",
+                ))
+
     return alerts
 
 

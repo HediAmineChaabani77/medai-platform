@@ -147,6 +147,12 @@ def _heuristic_differential(symptoms: str, patient_context: dict | None = None) 
     patient_context = patient_context or {}
     sex = str(patient_context.get("sexe") or patient_context.get("sex") or "").strip().lower()
 
+    # Shared predicates reused by multiple branches.
+    fever_positive = (
+        _contains_any(s, ("fièvre", "fievre", "fébrile", "febrile"))
+        and not _contains_any(s, ("sans fièvre", "sans fievre", "afébrile", "apyrétique"))
+    )
+
     if _contains_any(s, ("douleur thorac", "thoracique", "oppression", "irradiation bras", "poitrine")):
         return (
             [
@@ -186,7 +192,7 @@ def _heuristic_differential(symptoms: str, patient_context: dict | None = None) 
             ],
         )
 
-    if _contains_any(s, ("fièvre", "fievre")) and _contains_any(s, ("toux", "dyspn", "essouff")):
+    if fever_positive and _contains_any(s, ("toux", "dyspn", "essouff")):
         return (
             [
                 {
@@ -310,6 +316,149 @@ def _heuristic_differential(symptoms: str, patient_context: dict | None = None) 
                 "Heure de début des symptômes < 4h30",
                 "Altération de conscience",
                 "Déficit neurologique progressif",
+            ],
+        )
+
+    # --- Abdominal pain ---
+    if _contains_any(s, ("douleur abdomin", "abdomen", "fosse iliaque", "épigastr", "epigastr",
+                         "hypochondre", "mac burney", "defense abdomin", "défense abdomin")):
+        return (
+            [
+                {"condition": "Appendicite aiguë", "probability": 0.35,
+                 "reasoning": "Douleur en FID avec défense suggère une appendicite à éliminer.",
+                 "icd10": "K35", "citations": []},
+                {"condition": "Cholécystite aiguë", "probability": 0.20,
+                 "reasoning": "Douleur hypochondre droit / Murphy positif évoquent une cholécystite.",
+                 "icd10": "K81", "citations": []},
+                {"condition": "Pancréatite aiguë", "probability": 0.15,
+                 "reasoning": "Douleur épigastrique transfixiante avec vomissements possible.",
+                 "icd10": "K85", "citations": []},
+                {"condition": "Occlusion intestinale", "probability": 0.15,
+                 "reasoning": "Douleur abdominale + arrêt matière/gaz et vomissements à évaluer.",
+                 "icd10": "K56", "citations": []},
+                {"condition": "Diverticulite sigmoïdienne", "probability": 0.15,
+                 "reasoning": "Douleur FIG avec fièvre classique chez le patient âgé.",
+                 "icd10": "K57", "citations": []},
+            ],
+            [
+                "Défense ou contracture abdominale",
+                "Instabilité hémodynamique / sepsis",
+                "Vomissements bilieux, arrêt total des matières et gaz",
+            ],
+        )
+
+    # --- Headache ---
+    if _contains_any(s, ("céphal", "cephal", "mal de tête", "mal de tete", "migraine")):
+        severe = _contains_any(s, ("coup de tonnerre", "brutale", "thunderclap", "la pire de ma vie"))
+        return (
+            [
+                {"condition": "Hémorragie méningée" if severe else "Migraine",
+                 "probability": 0.45 if severe else 0.40,
+                 "reasoning": "Céphalée en coup de tonnerre à exclure en priorité." if severe
+                              else "Céphalée pulsatile unilatérale avec photophobie évoque une migraine.",
+                 "icd10": "I60" if severe else "G43", "citations": []},
+                {"condition": "Méningite",
+                 "probability": 0.25,
+                 "reasoning": "Céphalée + fièvre + raideur de nuque à éliminer systématiquement.",
+                 "icd10": "G03", "citations": []},
+                {"condition": "Hypertension intracrânienne / processus expansif",
+                 "probability": 0.15,
+                 "reasoning": "Céphalée matinale, vomissements, signes neuro focaux.",
+                 "icd10": "G93.2", "citations": []},
+                {"condition": "Céphalée de tension",
+                 "probability": 0.15,
+                 "reasoning": "Céphalée bilatérale en étau sans signe d'alarme.",
+                 "icd10": "G44.2", "citations": []},
+            ],
+            [
+                "Céphalée brutale « coup de tonnerre »",
+                "Fièvre + raideur de nuque",
+                "Déficit neurologique focal ou altération de conscience",
+            ],
+        )
+
+    # --- Acute dyspnea without fever/cough (so distinct from pneumonia branch) ---
+    cough_positive = (
+        _contains_any(s, ("toux",))
+        and not _contains_any(s, ("sans toux", "ni toux", "pas de toux", "pas toux"))
+    )
+    if _contains_any(s, ("dyspn", "essouff", "souffle court", "orthopn")) \
+       and not fever_positive \
+       and not cough_positive:
+        return (
+            [
+                {"condition": "Insuffisance cardiaque décompensée", "probability": 0.35,
+                 "reasoning": "Dyspnée + orthopnée évocatrice d'OAP chez le cardiopathe.",
+                 "icd10": "I50", "citations": []},
+                {"condition": "Embolie pulmonaire", "probability": 0.30,
+                 "reasoning": "Dyspnée aiguë isolée avec ou sans douleur thoracique à écarter.",
+                 "icd10": "I26", "citations": []},
+                {"condition": "Exacerbation d'asthme / BPCO", "probability": 0.20,
+                 "reasoning": "Antécédents respiratoires + sibilants + freinage expiratoire.",
+                 "icd10": "J45", "citations": []},
+                {"condition": "Pneumothorax spontané", "probability": 0.15,
+                 "reasoning": "Dyspnée brutale avec douleur latéralisée chez le sujet jeune maigre.",
+                 "icd10": "J93", "citations": []},
+            ],
+            [
+                "SpO2 < 92% en air ambiant",
+                "Tirage, cyanose, épuisement respiratoire",
+                "Hypotension, sueurs, altération de conscience",
+            ],
+        )
+
+    # --- Fever without respiratory or urinary focus (sepsis differential) ---
+    if _contains_any(s, ("fièvre", "fievre", "température 39", "temperature 39", "frissons")) \
+       and not _contains_any(s, ("toux", "dyspn", "dysurie", "brulure miction", "brûlure miction")):
+        return (
+            [
+                {"condition": "Sepsis / bactériémie", "probability": 0.30,
+                 "reasoning": "Fièvre + frissons imposent d'éliminer un foyer infectieux profond.",
+                 "icd10": "A41", "citations": []},
+                {"condition": "Pyélonéphrite aiguë", "probability": 0.20,
+                 "reasoning": "Fièvre isolée peut être le premier signe d'une PNA à bas bruit.",
+                 "icd10": "N10", "citations": []},
+                {"condition": "Endocardite infectieuse", "probability": 0.15,
+                 "reasoning": "Fièvre prolongée + souffle cardiaque récent = suspicion.",
+                 "icd10": "I33", "citations": []},
+                {"condition": "Infection virale systémique", "probability": 0.20,
+                 "reasoning": "Syndrome pseudo-grippal avec asthénie et myalgies.",
+                 "icd10": "B34", "citations": []},
+                {"condition": "Paludisme (retour de zone d'endémie)", "probability": 0.15,
+                 "reasoning": "Évoquer systématiquement si séjour récent en zone impaludée.",
+                 "icd10": "B54", "citations": []},
+            ],
+            [
+                "Hypotension ou altération hémodynamique",
+                "Trouble de la conscience",
+                "Marbrures, extrémités froides",
+            ],
+        )
+
+    # --- Isolated weakness / syncope ---
+    if _contains_any(s, ("syncope", "malaise", "perte de connaissance", "pc vagale", "p.c.", "lipothymie")):
+        return (
+            [
+                {"condition": "Syncope vagale", "probability": 0.35,
+                 "reasoning": "Prodromes vagaux, contexte déclencheur, récupération rapide.",
+                 "icd10": "R55", "citations": []},
+                {"condition": "Trouble du rythme (FA, BAV, TV)", "probability": 0.25,
+                 "reasoning": "Syncope à l'effort ou sans prodrome — ECG indispensable.",
+                 "icd10": "I47-I49", "citations": []},
+                {"condition": "Hypotension orthostatique", "probability": 0.15,
+                 "reasoning": "Chute de PA au passage debout, fréquent sous anti-HTA.",
+                 "icd10": "I95.1", "citations": []},
+                {"condition": "Embolie pulmonaire", "probability": 0.10,
+                 "reasoning": "Peut se révéler par une syncope isolée.",
+                 "icd10": "I26", "citations": []},
+                {"condition": "Hypoglycémie", "probability": 0.15,
+                 "reasoning": "À éliminer systématiquement chez le diabétique traité.",
+                 "icd10": "E16.2", "citations": []},
+            ],
+            [
+                "Syncope à l'effort ou précédée de palpitations",
+                "Antécédents de mort subite familiale",
+                "ECG anormal (BAV, QT long, bloc, WPW)",
             ],
         )
 

@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from app.config import get_settings
-from app.core.bootstrap import ensure_schema, seed_default_admin, seed_model_registry
+from app.core.bootstrap import ensure_schema, seed_default_admin, seed_drug_interactions, seed_model_registry
 from app.core.connectivity import ConnectivityProbe
 from app.db import SessionLocal
 from app.routes import auth, dmp, health, qa, uc1_diagnostic, uc2_report, uc3_prescription, uc4_admin
@@ -52,6 +52,7 @@ async def lifespan(app: FastAPI):
         with SessionLocal() as db:
             seed_default_admin(db, settings)
             seed_model_registry(db, settings)
+            seed_drug_interactions(db)
 
     probe = ConnectivityProbe(get_settings())
     await probe.start()

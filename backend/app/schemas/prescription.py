@@ -25,6 +25,13 @@ class PatientProfile(BaseModel):
     current_medications: list[Medication] = Field(default_factory=list)
     dfg_ml_min: float | None = None
     liver_markers: dict | None = None
+    # Comorbidity flags used by the contraindication checker.
+    asthma: bool = False
+    hepatic_failure: bool = False
+    qt_ms: float | None = None
+    kaliemia_mmol: float | None = None
+    epilepsy: bool = False
+    peptic_ulcer: bool = False
 
 
 class PrescriptionRequest(BaseModel):
